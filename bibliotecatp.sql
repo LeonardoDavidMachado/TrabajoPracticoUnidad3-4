@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 30-12-2020 a las 23:31:31
+-- Tiempo de generación: 05-01-2021 a las 20:21:59
 -- Versión del servidor: 10.4.14-MariaDB
 -- Versión de PHP: 7.2.34
 
@@ -40,7 +40,10 @@ INSERT INTO `categoria` (`nombre`, `categoria_id`) VALUES
 ('CIENCIA FICCION', 1),
 ('NOVELA HISTORICA', 2),
 ('LIRICO', 3),
-('EPICA', 4);
+('EPICA', 4),
+('POESIA KLINGON', 21),
+('NARRATIVO', 22),
+('RECETAS', 23);
 
 -- --------------------------------------------------------
 
@@ -52,7 +55,7 @@ CREATE TABLE `libro` (
   `nombre` varchar(50) NOT NULL,
   `descripcion` varchar(100) NOT NULL,
   `categoria_id` int(11) NOT NULL,
-  `persona_id` int(11) NOT NULL,
+  `persona_id` int(11) DEFAULT NULL,
   `libro_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -63,7 +66,9 @@ CREATE TABLE `libro` (
 INSERT INTO `libro` (`nombre`, `descripcion`, `categoria_id`, `persona_id`, `libro_id`) VALUES
 ('ARTURO PENDRAGON', 'HISTORIAS DEL OSO DE INGLATERRA', 4, 2, 1),
 ('CUENTOS COMPLETOS DE ASIMOV', 'RECOPILACION DE CUENTOS DE ASIMOV', 1, 2, 2),
-('LAS LEGIONES MALDITAS', 'SEGUNDA PARTE DE LA NOVELA AFRICANUS: EL HIJO DEL CONSUL', 2, 3, 5);
+('LAS LEGIONES MALDITAS', 'SEGUNDA PARTE DE LA NOVELA AFRICANUS: EL HIJO DEL CONSUL', 2, 3, 5),
+('ARTURO PENDRAG', 'PANCITO', 4, NULL, 6),
+('STAR WARS', '', 1, NULL, 8);
 
 -- --------------------------------------------------------
 
@@ -122,13 +127,13 @@ ALTER TABLE `persona`
 -- AUTO_INCREMENT de la tabla `categoria`
 --
 ALTER TABLE `categoria`
-  MODIFY `categoria_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `categoria_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT de la tabla `libro`
 --
 ALTER TABLE `libro`
-  MODIFY `libro_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `libro_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT de la tabla `persona`
