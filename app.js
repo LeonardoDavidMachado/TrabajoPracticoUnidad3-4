@@ -1,11 +1,11 @@
 const express = require('express');
 const util = require('util');
+const helmet = require('helmet');
 const app = express();
 const port = 3000;
 app.use(express.json());
-
+app.use(helmet());
 var conexion = require('./db');
-
 const qy = util.promisify(conexion.query).bind(conexion);
 
 app.post('/categoria', async (req, res) => {
@@ -49,7 +49,7 @@ app.get('/categoria/:id', async (req, res) => {
         const query = 'SELECT * FROM categoria WHERE categoria_id = ?';
         const respuesta = await qy(query, [req.params.id]);
         console.log(respuesta);
-        //res.status(200).send({ 'respuesta': "id: " + respuesta.insertId + " nombre: " + respuesta.nombre });
+        
         res.status(200).send({ 'respuesta': respuesta });
     }
     catch (e) {
@@ -195,41 +195,180 @@ function verificoDatosDePersona(req) {
     }
 };
 
-/*
-LIBRO
+app.post('/libro', async (req, res) => {
+    try {
+        verificoDatosDeLibro(req);
+        const nombre = req.body.nombre.toUpperCase();
+        const descripcion = req.body.descripcion.toUpperCase();
+        const categoria_id = req.body.categoria_id;
+        let persona_id = req.body.persona_id;
 
-POST '/libro' recibe: {nombre:string, descripcion:string, categoria_id:numero, persona_id:numero/null} 
-devuelve 200 y {id: numero, nombre:string, descripcion:string, categoria_id:numero, persona_id:numero/null}
-o bien status 413,  {mensaje: <descripcion del error>} que puede ser "error inesperado", "ese libro ya existe",
-"nombre y categoria son datos obligatorios", "no existe la categoria indicada", "no existe la persona indicada"
+        let query = 'SELECT * FROM libro WHERE nombre = ?';
+        let respuesta = await qy(query, [req.body.nombre]);
+        if (respuesta.length > 0) {
+            throw new Error("El libro ya existe");
+        }
+        query = 'SELECT * FROM categoria WHERE categoria_id = ?';
+        respuesta = await qy(query,[categoria_id]);
+        if(respuesta.length == 0) {
+            throw new Error("La categoria no existe");
+        }
+        if(persona_id == "NULL") {
+            query = 'INSERT INTO libro (nombre, descripcion, categoria_id,persona_id) VALUES (?, ?, ?, NULL)';
+            respuesta = await qy(query, [nombre, descripcion, categoria_id,persona_id]);
+        } else {
+            query = 'SELECT * FROM persona WHERE persona_id = ?';
+            respuesta = await qy(query,[persona_id]);
+            if(respuesta.length == 0) {
+                throw new Error ("La persona no existe");
+            }
+            query = 'INSERT INTO libro (nombre, descripcion, categoria_id, persona_id) VALUES (?, ?, ?, ?)';
+            respuesta = await qy(query, [nombre, descripcion, categoria_id, persona_id]);
+        }
+        res.status(200).send({ 'respuesta': nombre, descripcion, categoria_id, persona_id });
+    }
+    catch (e) {
+        console.error(e.message);
+        res.status(413).send({ "Error": e.message });
+    }
+});
 
-GET '/libro' devuelve 200 y [{id: numero, nombre:string, descripcion:string, categoria_id:numero, 
-persona_id:numero/null}] o bien 413, {mensaje: <descripcion del error>} "error inesperado"
+app.get('/libro', async (req, res) => {
+    try {
+        const query = 'SELECT * FROM libro';
+        const respuesta = await qy(query);
+        if (respuesta.length == 0) {
+            throw new Error("No hay libros en la base de datos");
+        }
+        res.status(200).send({ 'respuesta': respuesta });
+    }
+    catch (e) {
+        console.error(e.message);
+        res.status(413).send({ "Error": e.message });
+    }
+});
 
-GET '/libro/:id' devuelve 200 {id: numero, nombre:string, descripcion:string, categoria_id:numero, 
-persona_id:numero/null} y status 413, {mensaje: <descripcion del error>} "error inesperado",
-"no se encuentra ese libro"
+app.get('/libro/:id', async (req, res) => {
+    try {
+        const query = 'SELECT * FROM libro WHERE libro_id = ?';
+        const respuesta = await qy(query, [req.params.id]);
+        if (respuesta.length == 0) {
+            throw new Error("No se encuentra ese libro.");
+        }
+        res.status(200).send({ 'respuesta': respuesta });
+    }
+    catch (e) {
+        console.error(e.message);
+        res.status(413).send({ "Error": e.message });
+    }
+});
 
-PUT '/libro/:id' y {id: numero, nombre:string, descripcion:string, categoria_id:numero, persona_id:numero/null}
-devuelve status 200 y {id: numero, nombre:string, descripcion:string, categoria_id:numero, 
-persona_id:numero/null} modificado o bien status 413, {mensaje: <descripcion del error>} "error inesperado",  
-"solo se puede modificar la descripcion del libro
+app.put('/libro/:id', async (req, res) => {
+    try {
+        verificoDatosDeLibro(req);
+        const nombre = req.body.nombre.toUpperCase();
+        const descripcion = req.body.descripcion.toUpperCase();
+        const categoria_id = req.body.categoria_id;
+        let libro_id = req.params.id;
+        let persona_id = req.body.persona_id;
+        let query = 'SELECT * FROM libro WHERE libro_id = ?';
+        let respuesta = await qy(query, [req.params.id]);
+        if (respuesta.length == 0) {
+            throw new Error('No se encuentra el libro proporcionado.');
+        }
+        query = 'UPDATE libro SET nombre = ?, descripcion = ?, categoria_id = ?, persona_id = ? WHERE libro_id = ?';
+        respuesta = await qy(query, [nombre, descripcion,categoria_id,persona_id,libro_id]);
+        res.status(200).send({ 'respuesta': nombre, descripcion,categoria_id,persona_id,libro_id });
+    }
+    catch (e) {
+        console.error(e.message);
+        res.status(413).send({ "Error": e.message });
+    }
+});
 
-PUT '/libro/prestar/:id' y {id:numero, persona_id:numero} devuelve 200 y 
-{mensaje: "se presto correctamente"} o bien status 413, {mensaje: <descripcion del error>} 
-"error inesperado", "el libro ya se encuentra prestado, no se puede prestar hasta que no se devuelva", 
-"no se encontro el libro", "no se encontro la persona a la que se quiere prestar el libro"
+app.put('/libro/prestar/:id', async (req, res) => {
+    try {
+        let libro_id = req.params.id;
+        let persona_id = req.body.persona_id;
+        let query = 'SELECT * FROM libro WHERE libro_id = ?';
+        let respuesta = await qy(query, [req.params.id]);
+        if (respuesta.length == 0) {
+            throw new Error('No se encuentra el libro proporcionado.');
+        }
+        query = 'SELECT * FROM libro WHERE persona_id IS NULL AND libro_id = ?';
+        respuesta = await qy(query,[libro_id]);
+        if(respuesta.length == 0) {
+            throw new Error("El libro ya se encuentra prestado");
+        }
+        query = 'SELECT * FROM persona WHERE persona_id = ?';
+        respuesta = await qy(query, [persona_id]);
+        if(respuesta.length == 0) {
+            throw new Error("No se encontró la persona a la que se quiere prestar el libro.");
+        }
+        query = 'UPDATE libro SET persona_id = ? WHERE libro_id = ?';
+        respuesta = await qy(query, [persona_id,libro_id]);
+        res.status(200).send("Se prestó correctamente");
+    }
+    catch (e) {
+        console.error(e.message);
+        res.status(413).send({ "Error": e.message });
+    }
+});
 
-PUT '/libro/devolver/:id' y {} devuelve 200 y {mensaje: "se realizo la devolucion correctamente"} o 
-bien status 413, {mensaje: <descripcion del error>} "error inesperado", "ese libro no estaba prestado!", 
-"ese libro no existe"
 
+app.put('/libro/devolver/:id', async (req, res) => {
+    try {
+        let query = 'SELECT * FROM libro WHERE libro_id = ?';
+        let respuesta = await qy(query, [req.params.id]);
+        if (respuesta.length == 0) {
+            throw new Error('Ese libro no existe.');
+        }
+        query = 'SELECT * FROM libro WHERE persona_id IS NULL AND libro_id = ?';
+        respuesta = await qy(query,[req.params.id]);
+        if(respuesta.length > 0) {
+            throw new Error("El libro no está prestado");
+        }
+        query = 'UPDATE libro SET persona_id = NULL WHERE libro_id = ?';
+        respuesta = await qy(query, [req.params.id]);
+        res.status(200).send("Se devolvió correctamente");
+    }
+    catch (e) {
+        console.error(e.message);
+        res.status(413).send({ "Error": e.message });
+    }
+});
 
-DELETE '/libro/:id' devuelve 200 y {mensaje: "se borro correctamente"}  o bien status 413, 
-{mensaje: <descripcion del error>} "error inesperado", "no se encuentra ese libro", 
-"ese libro esta prestado no se puede borrar"
-*/
+app.delete('/libro/:id', async (req, res) => {
+    try {
+        let query = 'SELECT * FROM libro WHERE libro_id = ?';
+        let respuesta = await qy(query, [req.params.id]);
+        if (respuesta.length == 0) {
+            throw new Error("No existe este libro");
+        }
+        if(typeof respuesta.persona_id === 'number') {
+            throw new Error ("Este libro esta prestado, no se puede borrar.");
+        }
+        query = 'DELETE FROM libro WHERE libro_id = ?';
+        respuesta = await qy(query, [req.params.id]);
+        res.status(200).send({ 'respuesta': "Se borró correctamente" });
+
+    }
+    catch (e) {
+        console.error(e.message);
+        res.status(413).send({ "Error": e.message });
+    }
+});
+
+function verificoDatosDeLibro(req) {
+    if (!req.body.nombre || !req.body.categoria_id) {
+        throw new Error("Nombre y categoría son obligatorios");
+    }
+    if (req.body.nombre.trim() == "") {
+        throw new Error('Error: el nombre no debe ser solo espacios en blanco');
+    } 
+
+};
 
 app.listen(port, () => {
-    console.log('Servidor escuchando en el puerto ', port);
+    console.log('Servidor escuchando en el puerto ', port +' y con seguridad proporcionada por helmet.');
 });
