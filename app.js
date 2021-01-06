@@ -1,10 +1,12 @@
 const express = require('express');
 const util = require('util');
+const cors = require('cors');
 const helmet = require('helmet');
 const app = express();
 const port = 3000;
 app.use(express.json());
 app.use(helmet());
+app.use(cors());
 var conexion = require('./db');
 const qy = util.promisify(conexion.query).bind(conexion);
 
@@ -27,8 +29,9 @@ app.post('/categoria', async (req, res) => {
         res.status(200).send({ 'respuesta': "id: " + respuesta.insertId + " nombre: " + nombre });
     }
     catch (e) {
-        console.error(e.message);
-        res.status(413).send({ "Error": e.message });
+        const message = e.message ? e.message : "Error inesperado";
+        console.error(message);
+        res.status(413).send({ "Error": message });
     }
 });
 
@@ -39,8 +42,9 @@ app.get('/categoria', async (req, res) => {
         res.status(200).send({ 'respuesta': respuesta });
     }
     catch (e) {
-        console.error(e.message);
-        res.status(413).send({ "Error": e.message });
+        const message = e.message ? e.message : "Error inesperado";
+        console.error(message);
+        res.status(413).send({ "Error": message });
     }
 });
 
@@ -53,8 +57,9 @@ app.get('/categoria/:id', async (req, res) => {
         res.status(200).send({ 'respuesta': respuesta });
     }
     catch (e) {
-        console.error(e.message);
-        res.status(413).send({ "Error": e.message });
+        const message = e.message ? e.message : "Error inesperado";
+        console.error(message);
+        res.status(413).send({ "Error": message });
     }
 });
 
@@ -75,8 +80,9 @@ app.delete('/categoria/:id', async (req, res) => {
         res.status(200).send({ 'respuesta': "Se borró correctamente" });
     }
     catch (e) {
-        console.error(e.message);
-        res.status(413).send({ "Error": e.message });
+        const message = e.message ? e.message : "Error inesperado";
+        console.error(message);
+        res.status(413).send({ "Error": message });
     }
 });
 
@@ -97,8 +103,9 @@ app.post('/persona', async (req, res) => {
         res.status(200).send({ 'respuesta': "id: " + respuesta.insertId, nombre, apellido, alias, email });
     }
     catch (e) {
-        console.error(e.message);
-        res.status(413).send({ "Error": e.message });
+        const message = e.message ? e.message : "Error inesperado";
+        console.error(message);
+        res.status(413).send({ "Error": message });
     }
 });
 
@@ -112,8 +119,9 @@ app.get('/persona', async (req, res) => {
         res.status(200).send({ 'respuesta': respuesta });
     }
     catch (e) {
-        console.error(e.message);
-        res.status(413).send({ "Error": e.message });
+        const message = e.message ? e.message : "Error inesperado";
+        console.error(message);
+        res.status(413).send({ "Error": message });
     }
 });
 
@@ -127,8 +135,9 @@ app.get('/persona/:id', async (req, res) => {
         res.status(200).send({ 'respuesta': respuesta });
     }
     catch (e) {
-        console.error(e.message);
-        res.status(413).send({ "Error": e.message });
+        const message = e.message ? e.message : "Error inesperado";
+        console.error(message);
+        res.status(413).send({ "Error": message });
     }
 });
 
@@ -149,8 +158,9 @@ app.put('/persona/:id', async (req, res) => {
         res.status(200).send({ 'respuesta': nombre, apellido, alias, email });
     }
     catch (e) {
-        console.error(e.message);
-        res.status(413).send({ "Error": e.message });
+        const message = e.message ? e.message : "Error inesperado";
+        console.error(message);
+        res.status(413).send({ "Error": message });
     }
 });
 
@@ -172,8 +182,9 @@ app.delete('/persona/:id', async (req, res) => {
 
     }
     catch (e) {
-        console.error(e.message);
-        res.status(413).send({ "Error": e.message });
+        const message = e.message ? e.message : "Error inesperado";
+        console.error(message);
+        res.status(413).send({ "Error": message });
     }
 });
 
@@ -228,8 +239,9 @@ app.post('/libro', async (req, res) => {
         res.status(200).send({ 'respuesta': nombre, descripcion, categoria_id, persona_id });
     }
     catch (e) {
-        console.error(e.message);
-        res.status(413).send({ "Error": e.message });
+        const message = e.message ? e.message : "Error inesperado";
+        console.error(message);
+        res.status(413).send({ "Error": message });
     }
 });
 
@@ -243,8 +255,9 @@ app.get('/libro', async (req, res) => {
         res.status(200).send({ 'respuesta': respuesta });
     }
     catch (e) {
-        console.error(e.message);
-        res.status(413).send({ "Error": e.message });
+        const message = e.message ? e.message : "Error inesperado";
+        console.error(message);
+        res.status(413).send({ "Error": message });
     }
 });
 
@@ -258,8 +271,9 @@ app.get('/libro/:id', async (req, res) => {
         res.status(200).send({ 'respuesta': respuesta });
     }
     catch (e) {
-        console.error(e.message);
-        res.status(413).send({ "Error": e.message });
+        const message = e.message ? e.message : "Error inesperado";
+        console.error(message);
+        res.status(413).send({ "Error": message });
     }
 });
 
@@ -281,8 +295,9 @@ app.put('/libro/:id', async (req, res) => {
         res.status(200).send({ 'respuesta': nombre, descripcion,categoria_id,persona_id,libro_id });
     }
     catch (e) {
-        console.error(e.message);
-        res.status(413).send({ "Error": e.message });
+        const message = e.message ? e.message : "Error inesperado";
+        console.error(message);
+        res.status(413).send({ "Error": message });
     }
 });
 
@@ -310,8 +325,9 @@ app.put('/libro/prestar/:id', async (req, res) => {
         res.status(200).send("Se prestó correctamente");
     }
     catch (e) {
-        console.error(e.message);
-        res.status(413).send({ "Error": e.message });
+        const message = e.message ? e.message : "Error inesperado";
+        console.error(message);
+        res.status(413).send({ "Error": message });
     }
 });
 
@@ -333,8 +349,9 @@ app.put('/libro/devolver/:id', async (req, res) => {
         res.status(200).send("Se devolvió correctamente");
     }
     catch (e) {
-        console.error(e.message);
-        res.status(413).send({ "Error": e.message });
+        const message = e.message ? e.message : "Error inesperado";
+        console.error(message);
+        res.status(413).send({ "Error": message });
     }
 });
 
@@ -354,8 +371,9 @@ app.delete('/libro/:id', async (req, res) => {
 
     }
     catch (e) {
-        console.error(e.message);
-        res.status(413).send({ "Error": e.message });
+        const message = e.message ? e.message : "Error inesperado";
+        console.error(message);
+        res.status(413).send({ "Error": message });
     }
 });
 
