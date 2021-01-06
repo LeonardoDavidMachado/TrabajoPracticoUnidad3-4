@@ -6,3 +6,7 @@ Integrantes:
     Sol Aylen Margadant
     Tobias Julian Romano
     Tomas Ignacio Uhrich
+    
+Modificación 06/01/2021:
+    Añadido cors.
+    Modificados todos los catch para incluir mensaje de error inesperado.
