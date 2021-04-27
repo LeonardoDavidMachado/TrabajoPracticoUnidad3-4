@@ -2,7 +2,7 @@
 
 ## Objetivos
 
-Demostración de conocimientos y habilidades adquiridas en el curso.
+Demostración de conocimientos y habilidades adquiridas en el curso, siguiendo los requisitos establecidos en una documentación.
 
 ## Tecnologías utilizadas
 * Node
